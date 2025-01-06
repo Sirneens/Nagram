@@ -422,6 +422,7 @@
                 android:value="subject_segment" />
         </activity>
 	<activity android:name=".ui.SettingsActivity" />
+	<activity android:name=".ui.DeletedMessagesActivity" />
         <activity-alias
             android:name="org.telegram.ui.CallsActivity"
             android:targetActivity="org.telegram.ui.LaunchActivity"
