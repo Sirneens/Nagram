@@ -41,6 +41,11 @@ import android.widget.FrameLayout;
 import android.content.Context;
 import android.content.SharedPreferences;
 import androidx.preference.PreferenceManager;
+import android.util.Log;
+import org.telegram.messenger.config.AppConfig;
+import org.telegram.messenger.database.entities.DeletedMessage;
+import org.telegram.messenger.database.DeletedMessageDao;
+
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
