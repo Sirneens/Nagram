@@ -37,6 +37,11 @@ import android.util.SparseIntArray;
 import android.view.Gravity;
 import android.widget.FrameLayout;
 
+// added
+import android.content.Context;
+import android.content.SharedPreferences;
+import androidx.preference.PreferenceManager;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.collection.LongSparseArray;
@@ -134,6 +139,10 @@ public class MessagesController extends BaseController implements NotificationCe
     private final ConcurrentHashMap<String, TLObject> objectsByUsernames = new ConcurrentHashMap<>(100, 1.0f, 2);
     public static int stableIdPointer = 100;
 
+    //added
+    private static final String SAVE_DELETED_MESSAGES_KEY = "save_deleted_messages";
+    private static SharedPreferences preferences;
+
     private final HashMap<Long, TLRPC.Chat> activeVoiceChatsMap = new HashMap<>();
 
     private final ArrayList<Long> joiningToChannels = new ArrayList<>();
@@ -206,6 +215,23 @@ public class MessagesController extends BaseController implements NotificationCe
         }
     }
 
+    //added
+    public static void init(Context context) {
+        preferences = PreferenceManager.getDefaultSharedPreferences(context);
+    }
+
+    public static boolean isSaveDeletedMessagesEnabled() {
+        return preferences.getBoolean(SAVE_DELETED_MESSAGES_KEY, false);
+    }
+
+    public static void setSaveDeletedMessages(boolean enabled) {
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean(SAVE_DELETED_MESSAGES_KEY, enabled);
+        editor.apply();
+    } 
+
+    //end
+
     public ChannelBoostsController getBoostsController() {
         if (channelBoostsControler != null) {
             return channelBoostsControler;
@@ -231,6 +257,29 @@ public class MessagesController extends BaseController implements NotificationCe
         long lastRequestTime;
         TL_chatlists.TL_chatlists_chatlistUpdates lastValue;
     }
+
+    //added
+    private DeletedMessageDao deletedMessageDao;
+
+    public MessagesController() {
+        deletedMessageDao = new DeletedMessageDao();
+    }
+
+    public void onMessageDeleted(int accountId, long dialogId, int messageId, String messageContent) {
+        if (!isSaveDeletedMessagesEnabled()) {
+            return;
+        }
+
+        DeletedMessage deletedMessage = new DeletedMessage();
+        deletedMessage.setAccountId(accountId);
+        deletedMessage.setDialogId(dialogId);
+        deletedMessage.setMessageId(messageId);
+        deletedMessage.setMessageContent(messageContent);
+
+        deletedMessageDao.insert(deletedMessage);
+        Log.d("MessagesController", "Saved deleted message: " + messageContent);
+    }
+    //end
 
     private boolean dialogsInTransaction;
 
