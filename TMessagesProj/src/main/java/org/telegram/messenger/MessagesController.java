@@ -8544,267 +8544,174 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public void markDialogMessageAsDeleted(long dialogId, ArrayList<Integer> messages) {
-        ArrayList<MessageObject> objs = dialogMessage.get(dialogId);
-        if (objs != null) {
-            for (int i = 0; i < objs.size(); ++i) {
-                MessageObject obj = objs.get(i);
-                if (obj != null) {
-                    for (int a = 0; a < messages.size(); a++) {
-                        Integer id = messages.get(a);
-                        if (obj.getId() == id) {
-                            obj.deleted = true;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
+    // Do nothing to prevent marking messages as deleted
+}
 
-    public void deleteMessages(ArrayList<Integer> messages, ArrayList<Long> randoms, TLRPC.EncryptedChat encryptedChat, long dialogId, int topicId, boolean forAll, int mode) {
-        deleteMessages(messages, randoms, encryptedChat, dialogId, forAll, mode, false, 0, null, topicId);
-    }
+// Overloaded deleteMessages methods remain unchanged
+public void deleteMessages(ArrayList<Integer> messages, ArrayList<Long> randoms, TLRPC.EncryptedChat encryptedChat, long dialogId, int topicId, boolean forAll, int mode) {
+    deleteMessages(messages, randoms, encryptedChat, dialogId, forAll, mode, false, 0, null, topicId);
+}
 
-    public void deleteMessages(ArrayList<Integer> messages, ArrayList<Long> randoms, TLRPC.EncryptedChat encryptedChat, long dialogId, int topicId, boolean forAll, int mode, boolean cacheOnly) {
-        deleteMessages(messages, randoms, encryptedChat, dialogId, forAll, mode, cacheOnly, 0, null, topicId);
-    }
+public void deleteMessages(ArrayList<Integer> messages, ArrayList<Long> randoms, TLRPC.EncryptedChat encryptedChat, long dialogId, int topicId, boolean forAll, int mode, boolean cacheOnly) {
+    deleteMessages(messages, randoms, encryptedChat, dialogId, forAll, mode, cacheOnly, 0, null, topicId);
+}
 
-    public void deleteMessages(ArrayList<Integer> messages, ArrayList<Long> randoms, TLRPC.EncryptedChat encryptedChat, long dialogId, boolean forAll, int mode, boolean cacheOnly, long taskId, TLObject taskRequest, int topicId) {
-        deleteMessages(messages, randoms, encryptedChat, dialogId, forAll, mode, cacheOnly, taskId, taskRequest, topicId, false, 0);
-    }
+public void deleteMessages(ArrayList<Integer> messages, ArrayList<Long> randoms, TLRPC.EncryptedChat encryptedChat, long dialogId, boolean forAll, int mode, boolean cacheOnly, long taskId, TLObject taskRequest, int topicId) {
+    deleteMessages(messages, randoms, encryptedChat, dialogId, forAll, mode, cacheOnly, taskId, taskRequest, topicId, false, 0);
+}
 
-    public void deleteMessages(ArrayList<Integer> messages, ArrayList<Long> randoms, TLRPC.EncryptedChat encryptedChat, long dialogId, boolean forAll, int mode, boolean cacheOnly, long taskId, TLObject taskRequest, int topicId, boolean movedToScheduled, int movedToScheduledMessageId) {
-        final boolean scheduled = mode == ChatActivity.MODE_SCHEDULED;
-        final boolean quickReplies = mode == ChatActivity.MODE_QUICK_REPLIES;
-        if ((messages == null || messages.isEmpty()) && taskId == 0) {
-            return;
-        }
-        List<Integer> toSend = null;
-        long channelId;
-        if (taskId == 0) {
-            if (dialogId != 0 && DialogObject.isChatDialog(dialogId)) {
-                TLRPC.Chat chat = getChat(-dialogId);
-                channelId = ChatObject.isChannel(chat) ? chat.id : 0;
-            } else {
-                channelId = 0;
-            }
-            if (!cacheOnly) {
-                toSend = new ArrayList<>();
-                for (int a = 0, N = messages.size(); a < N; a++) {
-                    Integer mid = messages.get(a);
-                    if (mid > 0) {
-                        toSend.add(mid);
-                    }
-                }
-            }
-            if (scheduled) {
-                getMessagesStorage().markMessagesAsDeleted(dialogId, messages, true, false, ChatActivity.MODE_SCHEDULED, 0);
-            } else if (quickReplies) {
-                if (mode == ChatActivity.MODE_QUICK_REPLIES) {
-                    QuickRepliesController.getInstance(currentAccount).deleteLocalMessages(messages);
-                }
-                getMessagesStorage().markMessagesAsDeleted(dialogId, messages, true, false, ChatActivity.MODE_QUICK_REPLIES, topicId);
-            } else {
-                if (channelId == 0) {
-                    for (int a = 0; a < messages.size(); a++) {
-                        Integer id = messages.get(a);
-                        MessageObject obj = dialogMessagesByIds.get(id);
-                        if (obj != null) {
-                            obj.deleted = true;
-                        }
-                    }
-                } else {
-                    markDialogMessageAsDeleted(dialogId, messages);
-                }
-                getMessagesStorage().markMessagesAsDeleted(dialogId, messages, true, forAll, 0, topicId);
-                getMessagesStorage().updateDialogsWithDeletedMessages(dialogId, channelId, messages, null, true);
-            }
-            getNotificationCenter().postNotificationName(NotificationCenter.messagesDeleted, messages, channelId, scheduled, false, movedToScheduled, movedToScheduledMessageId);
+public void deleteMessages(ArrayList<Integer> messages, ArrayList<Long> randoms, TLRPC.EncryptedChat encryptedChat, long dialogId, boolean forAll, int mode, boolean cacheOnly, long taskId, TLObject taskRequest, int topicId, boolean movedToScheduled, int movedToScheduledMessageId) {
+    // Prevent deletion by returning early
+    if (true) return;
+
+    // Original deletion logic (commented out for reference)
+    /*
+    final boolean scheduled = mode == ChatActivity.MODE_SCHEDULED;
+    final boolean quickReplies = mode == ChatActivity.MODE_QUICK_REPLIES;
+    if ((messages == null || messages.isEmpty()) && taskId == 0) {
+        return;
+    }
+    List<Integer> toSend = null;
+    long channelId;
+    if (taskId == 0) {
+        if (dialogId != 0 && DialogObject.isChatDialog(dialogId)) {
+            TLRPC.Chat chat = getChat(-dialogId);
+            channelId = ChatObject.isChannel(chat) ? chat.id : 0;
         } else {
-            if (taskRequest instanceof TLRPC.TL_channels_deleteMessages) {
-                channelId = ((TLRPC.TL_channels_deleteMessages) taskRequest).channel.channel_id;
-            } else {
-                channelId = 0;
+            channelId = 0;
+        }
+        if (!cacheOnly) {
+            toSend = new ArrayList<>();
+            for (int a = 0, N = messages.size(); a < N; a++) {
+                Integer mid = messages.get(a);
+                if (mid > 0) {
+                    toSend.add(mid);
+                }
             }
         }
-        if (cacheOnly) {
-            return;
-        }
-
-        long newTaskId;
         if (scheduled) {
-            TLRPC.TL_messages_deleteScheduledMessages req;
-            TreeMap<Long, ArrayList<TLRPC.TL_messages_deleteScheduledMessages>> reqs = new TreeMap<>();
-
-            if (taskRequest instanceof TLRPC.TL_messages_deleteScheduledMessages) {
-                if (!reqs.containsKey(taskId)) reqs.put(taskId, new ArrayList<>());
-                reqs.get(taskId).add((TLRPC.TL_messages_deleteScheduledMessages) taskRequest);
-            } else {
-                List<List<Integer>> subIds = sliceThatBitch(toSend, 100);
-                for (List<Integer> ids : subIds) {
-                    req = new TLRPC.TL_messages_deleteScheduledMessages();
-                    req.id = ids;
-                    req.peer = getInputPeer(dialogId);
-
-                    NativeByteBuffer data = null;
-                    try {
-                        data = new NativeByteBuffer(12 + req.getObjectSize());
-                        data.writeInt32(24);
-                        data.writeInt64(dialogId);
-                        req.serializeToStream(data);
-                    } catch (Exception e) {
-                        FileLog.e(e);
-                    }
-                    newTaskId = getMessagesStorage().createPendingTask(data);
-                    if (!reqs.containsKey(newTaskId)) reqs.put(newTaskId, new ArrayList<>());
-                    reqs.get(newTaskId).add(req);
-                }
-            }
-
-            for (Map.Entry<Long, ArrayList<TLRPC.TL_messages_deleteScheduledMessages>> m : reqs.entrySet()) {
-                for (TLRPC.TL_messages_deleteScheduledMessages d : m.getValue()) {
-                    getConnectionsManager().sendRequest(d, (response, error) -> {
-                        if (error == null) {
-                            TLRPC.Updates updates = (TLRPC.Updates) response;
-                            processUpdates(updates, false);
-                        }
-                        if (m.getKey() != 0) {
-                            getMessagesStorage().removePendingTask(m.getKey());
-                        }
-                    });
-                }
-            }
+            getMessagesStorage().markMessagesAsDeleted(dialogId, messages, true, false, ChatActivity.MODE_SCHEDULED, 0);
         } else if (quickReplies) {
-            TLRPC.TL_messages_deleteQuickReplyMessages req;
-            TreeMap<Long, ArrayList<TLRPC.TL_messages_deleteQuickReplyMessages>> reqs = new TreeMap<>();
-            if (taskRequest instanceof TLRPC.TL_messages_deleteQuickReplyMessages) {
-                req = (TLRPC.TL_messages_deleteQuickReplyMessages) taskRequest;
-                newTaskId = taskId;
-            } else {
-                List<List<Integer>> subIds = sliceThatBitch(toSend, 100);
-                for (List<Integer> ids : subIds) {
-                    req = new TLRPC.TL_messages_deleteQuickReplyMessages();
-                    ArrayList<Integer> arrayList = new ArrayList<>(ids);
-                    req.id = arrayList;
-                    req.shortcut_id = topicId;
-
-                    NativeByteBuffer data = null;
-                    try {
-                        data = new NativeByteBuffer(4 + 8 + 4 + req.getObjectSize());
-                        data.writeInt32(103);
-                        data.writeInt64(dialogId);
-                        data.writeInt32(topicId);
-                        req.serializeToStream(data);
-                    } catch (Exception e) {
-                        FileLog.e(e);
-                    }
-                    newTaskId = getMessagesStorage().createPendingTask(data);
-                    if (!reqs.containsKey(newTaskId)) reqs.put(newTaskId, new ArrayList<>());
-                    reqs.get(newTaskId).add(req);
-                }
+            if (mode == ChatActivity.MODE_QUICK_REPLIES) {
+                QuickRepliesController.getInstance(currentAccount).deleteLocalMessages(messages);
             }
-
-            for (Map.Entry<Long, ArrayList<TLRPC.TL_messages_deleteQuickReplyMessages>> m : reqs.entrySet()) {
-                for (TLRPC.TL_messages_deleteQuickReplyMessages d : m.getValue()) {
-                    getConnectionsManager().sendRequest(d, (response, error) -> {
-                        if (error == null) {
-                            TLRPC.Updates updates = (TLRPC.Updates) response;
-                            processUpdates(updates, false);
-                        }
-                        if (m.getKey() != 0) {
-                            getMessagesStorage().removePendingTask(m.getKey());
-                        }
-                    });
-                }
-            }
-        } else if (channelId != 0) {
-            TLRPC.TL_channels_deleteMessages req;
-            TreeMap<Long, ArrayList<TLRPC.TL_channels_deleteMessages>> reqs = new TreeMap<>();
-            if (taskRequest != null) {
-                if (!reqs.containsKey(taskId)) reqs.put(taskId, new ArrayList<>());
-                reqs.get(taskId).add((TLRPC.TL_channels_deleteMessages) taskRequest);
-            } else {
-                List<List<Integer>> subIds = sliceThatBitch(toSend, 100);
-                for (List<Integer> ids : subIds) {
-                    req = new TLRPC.TL_channels_deleteMessages();
-                    req.id = ids;
-                    req.channel = getInputChannel(channelId);
-
-                    NativeByteBuffer data = null;
-                    try {
-                        data = new NativeByteBuffer(12 + req.getObjectSize());
-                        data.writeInt32(24);
-                        data.writeInt64(dialogId);
-                        req.serializeToStream(data);
-                    } catch (Exception e) {
-                        FileLog.e(e);
-                    }
-                    newTaskId = getMessagesStorage().createPendingTask(data);
-                    if (!reqs.containsKey(newTaskId)) reqs.put(newTaskId, new ArrayList<>());
-                    reqs.get(newTaskId).add(req);
-                }
-            }
-
-            for (Map.Entry<Long, ArrayList<TLRPC.TL_channels_deleteMessages>> m : reqs.entrySet()) {
-                for (TLRPC.TL_channels_deleteMessages d : m.getValue()) {
-                    getConnectionsManager().sendRequest(d, (response, error) -> {
-                        if (error == null) {
-                            TLRPC.TL_messages_affectedMessages res = (TLRPC.TL_messages_affectedMessages) response;
-                            processNewChannelDifferenceParams(res.pts, res.pts_count, channelId);
-                        }
-                        if (m.getKey() != 0) {
-                            getMessagesStorage().removePendingTask(m.getKey());
-                        }
-                    });
-                }
-            }
+            getMessagesStorage().markMessagesAsDeleted(dialogId, messages, true, false, ChatActivity.MODE_QUICK_REPLIES, topicId);
         } else {
-            if (randoms != null && encryptedChat != null && !randoms.isEmpty()) {
-                getSecretChatHelper().sendMessagesDeleteMessage(encryptedChat, randoms, null);
-            }
-            TLRPC.TL_messages_deleteMessages req;
-            TreeMap<Long, ArrayList<TLRPC.TL_messages_deleteMessages>> reqs = new TreeMap<>();
-            if (taskRequest instanceof TLRPC.TL_messages_deleteMessages) {
-                if (!reqs.containsKey(taskId)) reqs.put(taskId, new ArrayList<>());
-                reqs.get(taskId).add((TLRPC.TL_messages_deleteMessages) taskRequest);
-            } else {
-                List<List<Integer>> subIds = sliceThatBitch(toSend, 100);
-                for (List<Integer> ids : subIds) {
-                    req = new TLRPC.TL_messages_deleteMessages();
-                    req.id = ids;
-                    req.revoke = forAll;
-                    NativeByteBuffer data = null;
-                    try {
-                        data = new NativeByteBuffer(12 + req.getObjectSize());
-                        data.writeInt32(24);
-                        data.writeInt64(dialogId);
-                        req.serializeToStream(data);
-                    } catch (Exception e) {
-                        FileLog.e(e);
+            if (channelId == 0) {
+                for (int a = 0; a < messages.size(); a++) {
+                    Integer id = messages.get(a);
+                    MessageObject obj = dialogMessagesByIds.get(id);
+                    if (obj != null) {
+                        obj.deleted = true;
                     }
-                    newTaskId = getMessagesStorage().createPendingTask(data);
-                    if (!reqs.containsKey(newTaskId)) reqs.put(newTaskId, new ArrayList<>());
-                    reqs.get(newTaskId).add(req);
                 }
+            } else {
+                markDialogMessageAsDeleted(dialogId, messages);
             }
+            getMessagesStorage().markMessagesAsDeleted(dialogId, messages, true, forAll, 0, topicId);
+            getMessagesStorage().updateDialogsWithDeletedMessages(dialogId, channelId, messages, null, true);
+        }
+        getNotificationCenter().postNotificationName(NotificationCenter.messagesDeleted, messages, channelId, scheduled, false, movedToScheduled, movedToScheduledMessageId);
+    } else {
+        if (taskRequest instanceof TLRPC.TL_channels_deleteMessages) {
+            channelId = ((TLRPC.TL_channels_deleteMessages) taskRequest).channel.channel_id;
+        } else {
+            channelId = 0;
+        }
+    }
+    if (cacheOnly) {
+        return;
+    }
 
-            for (Map.Entry<Long, ArrayList<TLRPC.TL_messages_deleteMessages>> m : reqs.entrySet()) {
-                for (TLRPC.TL_messages_deleteMessages d : m.getValue()) {
-                    getConnectionsManager().sendRequest(d, (response, error) -> {
-                        if (error == null) {
-                            TLRPC.TL_messages_affectedMessages res = (TLRPC.TL_messages_affectedMessages) response;
-                            processNewDifferenceParams(-1, res.pts, -1, res.pts_count);
-                        }
-                        if (m.getKey() != 0) {
-                            getMessagesStorage().removePendingTask(m.getKey());
-                        }
-                    });
+    long newTaskId;
+    if (scheduled) {
+        TLRPC.TL_messages_deleteScheduledMessages req;
+        TreeMap<Long, ArrayList<TLRPC.TL_messages_deleteScheduledMessages>> reqs = new TreeMap<>();
 
+        if (taskRequest instanceof TLRPC.TL_messages_deleteScheduledMessages) {
+            if (!reqs.containsKey(taskId)) reqs.put(taskId, new ArrayList<>());
+            reqs.get(taskId).add((TLRPC.TL_messages_deleteScheduledMessages) taskRequest);
+        } else {
+            List<List<Integer>> subIds = sliceThatBitch(toSend, 100);
+            for (List<Integer> ids : subIds) {
+                req = new TLRPC.TL_messages_deleteScheduledMessages();
+                req.id = ids;
+                req.peer = getInputPeer(dialogId);
+
+                NativeByteBuffer data = null;
+                try {
+                    data = new NativeByteBuffer(12 + req.getObjectSize());
+                    data.writeInt32(24);
+                    data.writeInt64(dialogId);
+                    req.serializeToStream(data);
+                } catch (Exception e) {
+                    FileLog.e(e);
                 }
+                newTaskId = getMessagesStorage().createPendingTask(data);
+                if (!reqs.containsKey(newTaskId)) reqs.put(newTaskId, new ArrayList<>());
+                reqs.get(newTaskId).add(req);
+            }
+        }
+
+        for (Map.Entry<Long, ArrayList<TLRPC.TL_messages_deleteScheduledMessages>> m : reqs.entrySet()) {
+            for (TLRPC.TL_messages_deleteScheduledMessages d : m.getValue()) {
+                getConnectionsManager().sendRequest(d, (response, error) -> {
+                    if (error == null) {
+                        TLRPC.Updates updates = (TLRPC.Updates) response;
+                        processUpdates(updates, false);
+                    }
+                    if (m.getKey() != 0) {
+                        getMessagesStorage().removePendingTask(m.getKey());
+                    }
+                });
+            }
+        }
+    } else if (quickReplies) {
+        TLRPC.TL_messages_deleteQuickReplyMessages req;
+        TreeMap<Long, ArrayList<TLRPC.TL_messages_deleteQuickReplyMessages>> reqs = new TreeMap<>();
+        if (taskRequest instanceof TLRPC.TL_messages_deleteQuickReplyMessages) {
+            req = (TLRPC.TL_messages_deleteQuickReplyMessages) taskRequest;
+            newTaskId = taskId;
+        } else {
+            List<List<Integer>> subIds = sliceThatBitch(toSend, 100);
+            for (List<Integer> ids : subIds) {
+                req = new TLRPC.TL_messages_deleteQuickReplyMessages();
+                ArrayList<Integer> arrayList = new ArrayList<>(ids);
+                req.id = arrayList;
+                req.shortcut_id = topicId;
+
+                NativeByteBuffer data = null;
+                try {
+                    data = new NativeByteBuffer(4 + 8 + 4 + req.getObjectSize());
+                    data.writeInt32(103);
+                    data.writeInt64(dialogId);
+                    data.writeInt32(topicId);
+                    req.serializeToStream(data);
+                } catch (Exception e) {
+                    FileLog.e(e);
+                }
+                newTaskId = getMessagesStorage().createPendingTask(data);
+                if (!reqs.containsKey(newTaskId)) reqs.put(newTaskId, new ArrayList<>());
+                reqs.get(newTaskId).add(req);
+            }
+        }
+
+        for (Map.Entry<Long, ArrayList<TLRPC.TL_messages_deleteQuickReplyMessages>> m : reqs.entrySet()) {
+            for (TLRPC.TL_messages_deleteQuickReplyMessages d : m.getValue()) {
+                getConnectionsManager().sendRequest(d, (response, error) -> {
+                    if (error == null) {
+                        TLRPC.Updates updates = (TLRPC.Updates) response;
+                        processUpdates(updates, false);
+                    }
+                    if (m.getKey() != 0) {
+                        getMessagesStorage().removePendingTask(m.getKey());
+                    }
+                });
             }
         }
     }
-
+    */
+    }
     private List<List<Integer>> sliceThatBitch(List<Integer> ids, int slice) {
         if (ids == null || ids.isEmpty()) return new ArrayList<>();
         List<List<Integer>> sliced = new ArrayList<>(ids.size() / slice + 1);
